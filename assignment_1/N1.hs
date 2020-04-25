@@ -20,3 +20,11 @@ fix f x
 
 pick :: RealFrac r => r -> [a] -> a
 pick u xs = xs !! (floor.(u*).fromIntegral.length) xs
+
+
+-- Own implemented functions
+substitute :: Eq a => a -> [a] -> [a] -> [a]
+substitute _ [] _ = []
+substitute wc (l:ls) sub
+    | wc == l = sub ++ (substitute wc ls sub)
+    | otherwise = l : (substitute wc ls sub)
