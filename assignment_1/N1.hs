@@ -1,3 +1,7 @@
+import Debug.Trace
+
+debug = flip trace
+
 -- Given utility functions
 map2 :: (a -> b, c -> d) -> (a, c) -> (b, d)
 map2 (f1, f2) (x1, x2) = (f1 x1, f2 x2)
@@ -28,3 +32,17 @@ substitute _ [] _ = []
 substitute wc (l:ls) sub
     | wc == l = sub ++ (substitute wc ls sub)
     | otherwise = l : (substitute wc ls sub)
+
+-- match :: Eq a => a -> [a] -> [a] -> Maybe [a]
+match _ [] [] = Just []
+match _ [] _ = Nothing `debug` "match got empty p"
+match _ _ [] = Nothing `debug` "match got empty s"
+
+match wc (p:pp) (s:ss)
+    | p == wc = if(singleWildCardMatch (p:pp) (s:ss) /= Nothing) then (singleWildCardMatch (p:pp) (s:ss)) else (longerWildCardMatch (p:pp) (s:ss))
+    | p == s = match wc pp ss
+    | otherwise = Nothing
+
+singleWildcardMatch (wc:ps) (x:xs) = mmap (const [x]) (match wc ps xs)
+
+longerWildcardMatch (wc:ps) (x:xs) = mmap (x:) (match wc (wc:ps) xs)
