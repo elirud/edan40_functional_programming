@@ -39,10 +39,12 @@ match _ [] _ = Nothing `debug` "match got empty p"
 match _ _ [] = Nothing `debug` "match got empty s"
 
 match wc (p:pp) (s:ss)
-    | p == wc = if(singleWildCardMatch (p:pp) (s:ss) /= Nothing) then (singleWildCardMatch (p:pp) (s:ss)) else (longerWildCardMatch (p:pp) (s:ss))
+    | p == wc = if(singleWildcardMatch (p:pp) (s:ss) /= Nothing) then (singleWildcardMatch (p:pp) (s:ss)) else (longerWildcardMatch (p:pp) (s:ss))
     | p == s = match wc pp ss
     | otherwise = Nothing
 
 singleWildcardMatch (wc:ps) (x:xs) = mmap (const [x]) (match wc ps xs)
 
 longerWildcardMatch (wc:ps) (x:xs) = mmap (x:) (match wc (wc:ps) xs)
+
+transformationApply wc f w (p1, p2) = mmap (substitute wc p2 . f) (match wc p1 w)
