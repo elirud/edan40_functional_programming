@@ -2,6 +2,29 @@ import Debug.Trace
 
 debug = flip trace
 
+type Phrase = [String]
+type PhrasePair = (Phrase, Phrase)
+type BotBrain = [(Phrase, [Phrase])]
+
+reflections =
+  [ ("am",     "are"),
+    ("was",    "were"),
+    ("i",      "you"),
+    ("i'm",    "you are"),
+    ("i'd",    "you would"),
+    ("i've",   "you have"),
+    ("i'll",   "you will"),
+    ("my",     "your"),
+    ("me",     "you"),
+    ("are",    "am"),
+    ("you're", "i am"),
+    ("you've", "i have"),
+    ("you'll", "i will"),
+    ("your",   "my"),
+    ("yours",  "mine"),
+    ("you",    "me")
+  ]
+
 -- Given utility functions
 map2 :: (a -> b, c -> d) -> (a, c) -> (b, d)
 map2 (f1, f2) (x1, x2) = (f1 x1, f2 x2)
@@ -53,3 +76,6 @@ transformationApply wc f w (p1, p2) = mmap (substitute wc p2 . f) (match wc p1 w
 transformationsApply :: Eq a => a -> ([a] -> [a]) -> [([a], [a])] -> [a] -> Maybe [a]
 transformationsApply _ _ [] _ = Nothing
 transformationsApply wc f (p:pp) w = orElse (transformationApply wc f w p) (transformationsApply wc f pp w)
+
+reflect :: Phrase -> Phrase
+reflect ph = [try (flip lookup reflections) w | w <- ph]
