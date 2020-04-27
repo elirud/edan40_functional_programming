@@ -33,13 +33,13 @@ substitute wc (l:ls) sub
     | wc == l = sub ++ (substitute wc ls sub)
     | otherwise = l : (substitute wc ls sub)
 
--- match :: Eq a => a -> [a] -> [a] -> Maybe [a]
+match :: Eq a => a -> [a] -> [a] -> Maybe [a]
 match _ [] [] = Just []
 match _ [] _ = Nothing `debug` "match got empty p"
 match _ _ [] = Nothing `debug` "match got empty s"
 
 match wc (p:pp) (s:ss)
-    | p == wc = if(singleWildcardMatch (p:pp) (s:ss) /= Nothing) then (singleWildcardMatch (p:pp) (s:ss)) else (longerWildcardMatch (p:pp) (s:ss))
+    | p == wc = orElse (singleWildcardMatch (p:pp) (s:ss)) (longerWildcardMatch (p:pp) (s:ss))
     | p == s = match wc pp ss
     | otherwise = Nothing
 
@@ -47,4 +47,9 @@ singleWildcardMatch (wc:ps) (x:xs) = mmap (const [x]) (match wc ps xs)
 
 longerWildcardMatch (wc:ps) (x:xs) = mmap (x:) (match wc (wc:ps) xs)
 
+transformationApply :: Eq a => a -> ([a] -> [a]) -> [a] -> ([a], [a]) -> Maybe [a]
 transformationApply wc f w (p1, p2) = mmap (substitute wc p2 . f) (match wc p1 w)
+
+transformationsApply :: Eq a => a -> ([a] -> [a]) -> [([a], [a])] -> [a] -> Maybe [a]
+transformationsApply _ _ [] _ = Nothing
+transformationsApply wc f (p:pp) w = orElse (transformationApply wc f w p) (transformationsApply wc f pp w)
