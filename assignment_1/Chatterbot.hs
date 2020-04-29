@@ -2,6 +2,9 @@ module Chatterbot where
 import Utilities
 import System.Random
 import Data.Char
+import Debug.Trace
+
+debug = flip trace
 
 chatterbot :: String -> [(String, [String])] -> IO ()
 chatterbot botName botRules = do
@@ -26,12 +29,12 @@ type BotBrain = [(Phrase, [Phrase])]
 --------------------------------------------------------
 
 stateOfMind :: BotBrain -> IO (Phrase -> Phrase)
-{- TO BE WRITTEN -}
-stateOfMind _ = return id
+stateOfMind b = do
+  r <- randomIO :: IO Float
+  return $ rulesApply $ (map . map2) (id, pick r) b
 
 rulesApply :: [PhrasePair] -> Phrase -> Phrase
-{- TO BE WRITTEN -}
-rulesApply _ = id
+rulesApply = try . transformationsApply "*" reflect
 
 reflect :: Phrase -> Phrase
 reflect ph = [try (flip lookup reflections) w | w <- ph]
