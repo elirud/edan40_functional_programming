@@ -74,7 +74,7 @@ prepare :: String -> Phrase
 prepare = reduce . words . map toLower . filter (not . flip elem ".,:;*!#%&|") 
 
 rulesCompile :: [(String, [String])] -> BotBrain
-rulesCompile xs = [map2 (words, map words) x| x <- xs]
+rulesCompile xs = [map2 (words . map toLower, map words) x| x <- xs]
 
 
 --------------------------------------
@@ -99,8 +99,7 @@ reduce :: Phrase -> Phrase
 reduce = reductionsApply reductions
 
 reductionsApply :: [PhrasePair] -> Phrase -> Phrase
-{- TO BE WRITTEN -}
-reductionsApply _ = id
+reductionsApply (p:pp) ph = fix (try (transformationsApply "*" id (p:pp))) ph
 
 
 -------------------------------------------------------
@@ -119,8 +118,8 @@ substitute wc (l:ls) sub
 -- bound to the wildcard in the pattern list.
 match :: Eq a => a -> [a] -> [a] -> Maybe [a]
 match _ [] [] = Just []
-match _ [] _ = Nothing `debug` "match got empty p"
-match _ _ [] = Nothing `debug` "match got empty s"
+match _ [] _ = Nothing --`debug` "match got empty p"
+match _ _ [] = Nothing --`debug` "match got empty s"
 
 match wc (p:pp) (s:ss)
     | p == wc = orElse (singleWildcardMatch (p:pp) (s:ss)) (longerWildcardMatch (p:pp) (s:ss))
