@@ -46,5 +46,18 @@ exec (Read str : ts) dict (i:input) = exec ts (Dictionary.insert (str, i) dict) 
 exec (Write expr : ts) dict input = Expr.value expr dict : exec ts dict input
 exec (Comment _ : ts) dict input = exec ts dict input
 
+indent = flip replicate '\t'
+
+shw :: Int -> T -> String
+shw n (Assignment v e) = indent n ++ v ++ " := " ++ toString e ++ ";" ++ "\n"
+shw n (Skip) = indent n ++ "skip" ++ ";" ++ "\n"
+shw n (Begin ss) = indent n ++ "begin\n" ++ [shw (n+1) s | s <- ss] ++ indent n ++ "end"
+shw n (If e s1 s2) = indent n ++ "if " ++ toString e ++ " then\n" ++ shw (n+1) s1 ++ indent n ++ "else\n" ++ shw (n+1) s2
+shw n (While e s) = indent n ++ "while " ++ toString e ++ " do\n" ++ shw (n+1) s ++ "\n"
+shw n (Read v) = indent n ++ "read " ++ v ++ ";" ++ "\n"
+shw n (Write e) = indent n ++ "write " ++ toString e ++ ";" ++ "\n"
+shw n (Comment v) = indent n ++ "-- " ++ v ++ "\n"
+
 instance Parse Statement where
   parse = assignment ! skipStatement ! beginStatement ! ifStatement ! whileStatement ! readStatement ! writeStatement ! commentStatement
+  toString = shw 0
