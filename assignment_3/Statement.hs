@@ -12,6 +12,7 @@ data Statement =
     While Expr.T Statement |
     Read String |
     Write Expr.T |
+    Comment String
     deriving Show
 
 assignment = word #- accept ":=" # Expr.parse #- require ";" >-> buildAss
@@ -21,6 +22,7 @@ ifStatement = accept "if" -#  Expr.parse #- require "then" # parse #- require "e
 whileStatement = accept "while" -# Expr.parse #- require "do" # parse >-> buildWhile
 readStatement = accept "read" -# word #- require ";" >-> Read
 writeStatement = accept "write" -# Expr.parse #- require ";" >-> Write
+commentStatement = accept "--" -# iter (char ? (/= '\n')) #- require "\n" >-> Comment
 
 
 buildAss (v, e) = Assignment v e
@@ -42,6 +44,7 @@ exec (While cond stmt : ts) dict input =
     else exec ts dict input
 exec (Read str : ts) dict (i:input) = exec ts (Dictionary.insert (str, i) dict) input
 exec (Write expr : ts) dict input = Expr.value expr dict : exec ts dict input
+exec (Comment _ : ts) dict input = exec ts dict input
 
 instance Parse Statement where
-  parse = assignment ! skipStatement ! beginStatement ! ifStatement ! whileStatement ! readStatement ! writeStatement
+  parse = assignment ! skipStatement ! beginStatement ! ifStatement ! whileStatement ! readStatement ! writeStatement ! commentStatement
