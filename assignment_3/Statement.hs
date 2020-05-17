@@ -26,14 +26,14 @@ commentStatement = accept "--" -# iter (char ? (/= '\n')) #- require "\n" >-> Co
 
 
 buildAss (v, e) = Assignment v e
-buildIf ((expr, doIf) doElse) = if expr doIf doElse
-buildWhile (expr, stmt) -> While expr stmt
+buildIf ((expr, doIf), doElse) = If expr doIf doElse
+buildWhile (expr, stmt) = While expr stmt
 
 exec :: [T] -> Dictionary.T String Integer -> [Integer] -> [Integer]
 exec [] _ _ = []
 exec (Assignment str expr : ts) dict input = exec ts (Dictionary.insert (str, Expr.value expr dict) dict) input
 exec (Skip : ts) dict input = exec ts dict input
-exec (Begin [stmts] : ts) dict input = exec (stmts ++ ts) dict input
+exec (Begin stmts : ts) dict input = exec (stmts ++ ts) dict input
 exec (If cond thenStmts elseStmts : stmts) dict input = 
     if (Expr.value cond dict) > 0 
     then exec (thenStmts: stmts) dict input
@@ -51,7 +51,7 @@ indent = flip replicate '\t'
 shw :: Int -> T -> String
 shw n (Assignment v e) = indent n ++ v ++ " := " ++ toString e ++ ";" ++ "\n"
 shw n (Skip) = indent n ++ "skip" ++ ";" ++ "\n"
-shw n (Begin ss) = indent n ++ "begin\n" ++ [shw (n+1) s | s <- ss] ++ indent n ++ "end"
+shw n (Begin ss) = indent n ++ "begin\n" ++ concat [shw (n+1) s | s <- ss] ++ indent n ++ "end"
 shw n (If e s1 s2) = indent n ++ "if " ++ toString e ++ " then\n" ++ shw (n+1) s1 ++ indent n ++ "else\n" ++ shw (n+1) s2
 shw n (While e s) = indent n ++ "while " ++ toString e ++ " do\n" ++ shw (n+1) s ++ "\n"
 shw n (Read v) = indent n ++ "read " ++ v ++ ";" ++ "\n"
