@@ -15,7 +15,17 @@ data Statement =
     deriving Show
 
 assignment = word #- accept ":=" # Expr.parse #- require ";" >-> buildAss
+skipStatement = accept "skip" -# require ";" >-> \_ -> Skip
+beginStatement = accept "begin" -# iter parse #- require "end" >-> Begin
+ifStatement = accept "if" -#  Expr.parse #- require "then" # parse #- require "else" # parse >-> buildIf
+whileStatement = accept "while" -# Expr.parse #- require "do" # parse >-> buildWhile
+readStatement = accept "read" -# word #- require ";" >-> Read
+writeStatement = accept "write" -# Expr.parse #- require ";" >-> Write
+
+
 buildAss (v, e) = Assignment v e
+buildIf ((expr, doIf) doElse) = if expr doIf doElse
+buildWhile (expr, stmt) -> While expr stmt
 
 exec :: [T] -> Dictionary.T String Integer -> [Integer] -> [Integer]
 exec (If cond thenStmts elseStmts: stmts) dict input = 
