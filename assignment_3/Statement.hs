@@ -34,10 +34,10 @@ exec [] _ _ = []
 exec (Assignment str expr : ts) dict input = exec ts (Dictionary.insert (str, Expr.value expr dict) dict) input
 exec (Skip : ts) dict input = exec ts dict input
 exec (Begin stmts : ts) dict input = exec (stmts ++ ts) dict input
-exec (If cond thenStmts elseStmts : stmts) dict input = 
+exec (If cond thenStmts elseStmts : ts) dict input = 
     if (Expr.value cond dict) > 0 
-    then exec (thenStmts: stmts) dict input
-    else exec (elseStmts: stmts) dict input
+    then exec (thenStmts : ts) dict input
+    else exec (elseStmts : ts) dict input
 exec (While cond stmt : ts) dict input = 
     if (Expr.value cond dict) > 0
     then exec (stmt : (While cond stmt) : ts) dict input
