@@ -26,13 +26,16 @@ spaces :: Parser String
 spaces = iter (char ? isSpace)
 
 token :: Parser a -> Parser a
-token m = m #- spaces
+token m = m #- spaces #-  comments
 
 letter :: Parser Char
 letter =  (char ? isAlpha)
 
 word :: Parser String
 word = token (letter # iter letter >-> cons)
+
+comments :: Parser [String]
+comments = iter (accept "--" -# (char ? (/= '\n')) -# require "\n")
 
 chars :: Int -> Parser String
 chars 0 = return []

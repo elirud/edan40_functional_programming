@@ -11,8 +11,7 @@ data Statement =
     If Expr.T Statement Statement |
     While Expr.T Statement |
     Read String |
-    Write Expr.T |
-    Comment String
+    Write Expr.T
     deriving Show
 
 assignment = word #- accept ":=" # Expr.parse #- require ";" >-> buildAss
@@ -22,7 +21,6 @@ ifStatement = accept "if" -#  Expr.parse #- require "then" # parse #- require "e
 whileStatement = accept "while" -# Expr.parse #- require "do" # parse >-> buildWhile
 readStatement = accept "read" -# word #- require ";" >-> Read
 writeStatement = accept "write" -# Expr.parse #- require ";" >-> Write
-commentStatement = accept "--" -# iter (char ? (/= '\n')) #- require "\n" >-> Comment
 
 
 buildAss (v, e) = Assignment v e
@@ -44,7 +42,6 @@ exec (While cond stmt : ts) dict input =
     else exec ts dict input
 exec (Read str : ts) dict (i:input) = exec ts (Dictionary.insert (str, i) dict) input
 exec (Write expr : ts) dict input = Expr.value expr dict : exec ts dict input
-exec (Comment _ : ts) dict input = exec ts dict input
 
 indent = flip replicate '\t'
 
@@ -56,8 +53,7 @@ shw n (If e s1 s2) = indent n ++ "if " ++ toString e ++ " then\n" ++ shw (n+1) s
 shw n (While e s) = indent n ++ "while " ++ toString e ++ " do\n" ++ shw (n+1) s ++ "\n"
 shw n (Read v) = indent n ++ "read " ++ v ++ ";" ++ "\n"
 shw n (Write e) = indent n ++ "write " ++ toString e ++ ";" ++ "\n"
-shw n (Comment v) = indent n ++ "-- " ++ v ++ "\n"
 
 instance Parse Statement where
-  parse = assignment ! skipStatement ! beginStatement ! ifStatement ! whileStatement ! readStatement ! writeStatement ! commentStatement
+  parse = assignment ! skipStatement ! beginStatement ! ifStatement ! whileStatement ! readStatement ! writeStatement
   toString = shw 0
