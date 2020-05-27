@@ -88,7 +88,7 @@ value (Mul t u) d = (value t d) * (value u d)
 value (Div t u) d = case value u d of
   0 -> error "Division by zero"
   _ -> value t d `div` value u d
-value (Pow t u) d = value t d ^ value u d
+value (Pow t u) d = (value u d) ^ (value t d)
 
 instance Parse Expr where
     parse = expr
